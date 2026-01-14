@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@ag-ui/client": "^0.0.42",
     "@copilotkit/react-core": "^1.51.0",
     "@copilotkit/react-ui": "^1.51.0",
     "@copilotkit/runtime": "^1.51.0",
