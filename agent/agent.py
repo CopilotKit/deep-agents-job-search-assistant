@@ -2,6 +2,7 @@ import os
 from deepagents import create_deep_agent
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
+from copilotkit.langgraph import copilotkit_emit_message
 
 load_dotenv()
 
@@ -31,15 +32,31 @@ def build_agent():
         temperature=0.2,
     )
 
-    # Deep Agents includes planning + filesystem tools (ls/read_file/write_file/edit_file)
+    async def _emit_progress_tool(config, inputs: dict):
+        # Emit a progress update to the UI
+        await copilotkit_emit_message(config, inputs.get("message", ""))
+        return {}
+
+    emit_progress_tool = {
+        "name": "emit_progress",
+        "description": "Emit a progress message to CopilotKit UI.",
+        "parameters": [
+            {
+                "name": "message",
+                "type": "string",
+                "description": "Progress message to emit",
+            }
+        ],
+        "func": _emit_progress_tool,
+    }
+
+    # DeepAgents includes planning + filesystem tools (ls/read_file/write_file/edit_file)
     agent = create_deep_agent(
-        # tools=[
-        #     tools.write_todos,
-        #     tools.write_file,
-        #     tools.read_file,
-        # ],
-        # tools=[count_words],  # only pass custom tools here
-        system_prompt=SYSTEM_PROMPT,
+        tools=[emit_progress_tool],
+        system_prompt=SYSTEM_PROMPT
+        + (
+            "\n\nAt each stage, call emit_progress(message) to send live updates to the UI."
+        ),
         model=llm,
         subagents=[],
     )

@@ -11,7 +11,7 @@ const serviceAdapter = new ExperimentalEmptyAdapter();
 const runtime = new CopilotRuntime({
   agents: {
     post_generator: new HttpAgent({
-      url: process.env.AGENT_URL || "http://localhost:8000/copilotkit",
+      url: process.env.AGENT_URL || "http://localhost:8000/copilotkit/",
     }),
   },
 });
