@@ -1,65 +1,79 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useCoAgent } from "@copilotkit/react-core";
+import { CopilotChat } from "@copilotkit/react-ui";
+
+interface AgentState {
+  plan?: string;
+  post?: string;
+  step?: string;
+}
+
+export default function Page() {
+  const { state } = useCoAgent<AgentState>({
+    name: "post_generator",
+    initialState: { plan: "", post: "", step: "idle" },
+  });
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-4xl font-bold text-white mb-2">Post Generator</h1>
+          <p className="text-slate-300 text-lg mb-8">
+            Powered by Deep Agents + CopilotKit
           </p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Chat */}
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-lg shadow-xl overflow-hidden h-[600px]">
+                <CopilotChat
+                  labels={{
+                    title: "Post Generator",
+                    initial:
+                      'Tell me a topic for a blog post (e.g., "Write a blog post about Deep Agents with CopilotKit")',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Live Post Preview */}
+            <div className="lg:col-span-1">
+              <div className="bg-slate-800 border border-slate-700 rounded-lg p-6 h-[600px] overflow-y-auto">
+                <h3 className="text-lg font-semibold text-white mb-4">
+                  Live Preview
+                </h3>
+                {state?.step && (
+                  <div className="mb-4 text-sm text-cyan-300">
+                    Status: <span className="font-mono">{state.step}</span>
+                  </div>
+                )}
+                {state?.plan && (
+                  <div className="text-slate-300 mb-4">
+                    <h4 className="font-semibold text-white mb-2">Plan</h4>
+                    <pre className="text-xs whitespace-pre-wrap font-mono bg-slate-900 p-3 rounded border border-slate-700">
+                      {state.plan}
+                    </pre>
+                  </div>
+                )}
+                {state?.post ? (
+                  <div className="text-slate-300 space-y-2">
+                    <h4 className="font-semibold text-white mb-2">Post</h4>
+                    <pre className="text-xs whitespace-pre-wrap font-mono bg-slate-900 p-3 rounded border border-slate-700">
+                      {state.post}
+                    </pre>
+                  </div>
+                ) : (
+                  <p className="text-slate-400 italic">
+                    Post content will appear here as the agent generates it...
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }
