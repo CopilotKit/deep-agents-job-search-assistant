@@ -1,13 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useDefaultTool } from "@copilotkit/react-core";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { CopilotChat } from "@copilotkit/react-ui";
-import { useCoAgent, useCopilotReadable } from "@copilotkit/react-core";
-import type { AgentState } from "@/lib/types";
+import { useCopilotReadable } from "@copilotkit/react-core";
 import { ResumeUpload } from "./ResumeUpload";
 import { JobsResults } from "./JobsResults";
-// import { JobPosting } from "@/lib/types";
+import { JobPosting } from "@/lib/types";
 
 interface ResumeData {
   success: boolean;
@@ -20,54 +18,57 @@ export function ChatPanel() {
   const [resumeUploaded, setResumeUploaded] = useState(false);
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
 
-
   const [targetTitle, setTargetTitle] = useState("Frontend Engineer");
   const [targetLocation, setTargetLocation] = useState("Remote OR Bangalore");
   const [skillsHint, setSkillsHint] = useState("React, Next.js, TypeScript");
 
-  useDefaultTool({
-    render: ({ name, status, args, result }) => (
-      <details className="my-2 rounded border border-slate-200 bg-white p-2 text-xs">
-        <summary className="cursor-pointer">
-          {status === "complete" ? `Called ${name}` : `Calling ${name}`}
-        </summary>
-        <div className="mt-2 space-y-1">
-          <div>Status: {status}</div>
-          <div>Args: <pre className="whitespace-pre-wrap">{JSON.stringify(args, null, 2)}</pre></div>
-          <div>Result: <pre className="whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre></div>
-        </div>
-      </details>
-    ),
-  });
+  const processedKeyRef = useRef<string | null>(null); // dedupe key
+  const [jobs, setJobs] = useState<JobPosting[]>([]);
 
-  const { state } = useCoAgent<AgentState>({
-    name: "job_application_assistant",
-    initialState: {
-      jobs_list: [],
-      cover_letter_append: "",
+  useDefaultTool({
+    render: ({ name, status, args, result }) => {
+      // capture tool result
+      if (name === "update_jobs_list" && status === "complete" && result?.jobs_list) {
+        const key = JSON.stringify({
+          name,
+          status,
+          len: result.jobs_list.length,
+          first: result.jobs_list[0]?.url,
+        });
+  
+        if (processedKeyRef.current !== key) {
+        processedKeyRef.current = key;
+
+        queueMicrotask(() => {
+          setJobs(result.jobs_list);
+        });
+      }
+      }
+  
+      return (
+        <details className="my-2 rounded border border-slate-200 bg-white p-2 text-xs">
+          <summary className="cursor-pointer">
+            {status === "complete" ? `Called ${name}` : `Calling ${name}`}
+          </summary>
+          <div className="mt-2 space-y-1">
+            <div>Status: {status}</div>
+            <div>
+              Args:
+              <pre className="whitespace-pre-wrap">
+                {JSON.stringify(args, null, 2)}
+              </pre>
+            </div>
+            <div>
+              Result:
+              <pre className="whitespace-pre-wrap">
+                {JSON.stringify(result, null, 2)}
+              </pre>
+            </div>
+          </div>
+        </details>
+      );
     },
   });
-
-  const toolMsg = (state as any)?.copilotkit?.messages?.find(
-    (m: any) => m?.type === "tool" && m?.name === "update_jobs_list"
-  );
-  
-
-  let jobsFromTool: any[] = [];
-  try {
-    const parsed =
-      typeof toolMsg?.content === "string"
-        ? JSON.parse(toolMsg.content)
-        : toolMsg?.content; // if it’s already an object
-    jobsFromTool = parsed?.jobs_list ?? [];
-  } catch {}
-
-  const jobsToRender =
-    (state as any)?.jobs_list?.length ? (state as any).jobs_list : jobsFromTool;
-
-  console.log("agent state:", state);
-  console.log("jobs_list length:", state?.jobs_list?.length ?? 0);
-  if (state?.jobs_list?.length) console.log("first job:", state.jobs_list[0]);
 
   useCopilotReadable({
     description: "Job search preferences",
@@ -154,7 +155,6 @@ export function ChatPanel() {
                   </div>
                 )}
                 <div className="flex-1 min-h-0 overflow-hidden">
-                  {/* <ToolRenderers /> */}
                   <div className="h-full min-h-0 overflow-y-auto p-3">
                     <CopilotChat
                       labels={{
@@ -162,13 +162,12 @@ export function ChatPanel() {
                         initial: `Try: "Find frontend engineer jobs in Remote or Bangalore with React/Next.js"`,
                       }}
                     />
-                    {/* <JobsResults jobs={state?.jobs_list ?? []} /> */}
-                    <JobsResults jobs={jobsToRender} />
+                    <JobsResults jobs={jobs} />
                   </div>
                 </div>
               </div>
             )}
-            {resumeUploaded && (
+            {/* {resumeUploaded && (
               <a
                 className="text-sm text-blue-700 hover:underline"
                 href="/api/cover-letters/download"
@@ -177,7 +176,7 @@ export function ChatPanel() {
               >
                 Download cover_letters.md
               </a>
-            )}
+            )} */}
           </div>
         </div>
       </div>

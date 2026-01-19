@@ -33,7 +33,7 @@ export function JobsResults({ jobs }: { jobs: JobPosting[] }) {
                     Open
                   </a>
                 </td>
-                <td className="px-4 py-2">{j.goodMatch || "—"}</td>
+                <td className="px-4 py-2">{j.goodMatch || "Yes"}</td>
               </tr>
             ))}
           </tbody>
