@@ -1,43 +1,99 @@
-from dotenv import load_dotenv
-from fastapi import FastAPI
+import os
+from fastapi import FastAPI, HTTPException, File, UploadFile
 import uvicorn
-
-from copilotkit import CopilotKitRemoteEndpoint, LangGraphAGUIAgent, Agent as _AgentBase
-from copilotkit.integrations.fastapi import add_fastapi_endpoint
-
-from agent import build_agent
+from dotenv import load_dotenv
+from ag_ui_langgraph import add_langgraph_fastapi_endpoint
+from copilotkit import LangGraphAGUIAgent
+from agent import build_agent, parse_pdf_resume, extract_skills_from_resume
+import tempfile
 
 load_dotenv()
 
-app = FastAPI()
-graph = build_agent()
-
-
-def _dict_repr_agui(self):
-    base = _AgentBase.dict_repr(self)
-    base["type"] = "langgraph"
-    return base
-
-
-LangGraphAGUIAgent.dict_repr = _dict_repr_agui
-
-sdk = CopilotKitRemoteEndpoint(
-    agents=[
-        LangGraphAGUIAgent(
-            name="post_generator",
-            description="Creates a blog post via planning + subagents + filesystem.",
-            graph=graph,
-        )
-    ]
+app = FastAPI(
+    title="Job Application Assistant",
+    description="Find jobs and generate personalized cover letters",
+    version="1.0.0",
 )
 
-add_fastapi_endpoint(app, sdk, "/copilotkit")
+try:
+    # agent_graph = build_agent().with_config({"recursion_limit": 200})
+    agent_graph = build_agent()
+    print(agent_graph)
+    add_langgraph_fastapi_endpoint(
+        app=app,
+        agent=LangGraphAGUIAgent(
+            name="job_application_assistant",
+            description="Job finder and cover letter generator",
+            graph=agent_graph,
+        ),
+        path="/",
+    )
+    print("[MAIN] Agent registered")
+except Exception as e:
+    print(f"[ERROR] Failed to build agent: {str(e)}")
+    raise
 
 
 @app.get("/healthz")
-def health():
-    return {"status": "ok"}
+async def health_check():
+    """Health check"""
+    return {
+        "status": "healthy",
+        "service": "job-application-assistant",
+        "version": "1.0.0",
+    }
+
+
+@app.post("/api/upload-resume")
+async def upload_resume(file: UploadFile = File(...)):
+    """
+    Upload and parse resume (PDF, DOCX, TXT).
+    Returns extracted text and skills.
+    """
+    if not file:
+        raise HTTPException(status_code=400, detail="No file provided")
+
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+            content = await file.read()
+            tmp.write(content)
+            tmp_path = tmp.name
+
+        if file.filename.endswith(".pdf"):
+            resume_text = parse_pdf_resume(tmp_path)
+        else:
+            # for other formats, just read as text
+            resume_text = content.decode("utf-8", errors="ignore")
+
+        skills = extract_skills_from_resume(resume_text)
+
+        os.unlink(tmp_path)
+
+        return {
+            "success": True,
+            "text": resume_text[:1000],
+            "skills": skills,
+            "filename": file.filename,
+        }
+
+    except Exception as e:
+        print(f"[ERROR] Resume upload failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+def main():
+    """Run server"""
+    host = os.getenv("SERVER_HOST", "0.0.0.0")
+    port = int(os.getenv("SERVER_PORT", 8123))
+
+    uvicorn.run(
+        "main:app",
+        host=host,
+        port=port,
+        reload=True,
+        log_level="info",
+    )
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    main()
