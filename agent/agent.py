@@ -12,15 +12,32 @@ import json
 
 load_dotenv()
 
-MAIN_SYSTEM_PROMPT = (
-    "You must do these steps in order:\n"
-    "1) Call internet_search(query) to get results.\n"
-    "2) Convert results into EXACTLY 5 job objects with keys: company, title, location, url, Good Match.\n"
-    "3) Call update_jobs_list(jobs) exactly once with that 5-item list, wait for confirmation.\n"
-    "4) Only after that, reply with: Found 5 jobs.\n"
-    "5) Then Call finalize().\n"
-    "Rules: Never output JSON or tool results in chat. If you cannot find 5, still call update_jobs_list with as many as found.\n"
-)
+MAIN_SYSTEM_PROMPT = """
+You are a tool-using agent.
+
+Rules (hard):
+- Never include job details, URLs, or JSON in assistant messages.
+
+Steps:
+1) Call internet_search(query)
+2) Build 5 job objects
+3) Call update_jobs_list(jobs_json) once
+4) Call finalize()
+5) Output: Found 5 jobs.
+
+If you cannot find 5, still call update_jobs_list(jobs_json) with as many as found.
+"""
+
+# MAIN_SYSTEM_PROMPT = (
+#     "You must do these steps in order:\n"
+#     "1) Call internet_search(query) to get results.\n"
+#     "2) Convert results into EXACTLY 5 job objects with keys: company, title, location, url, Good Match.\n"
+#     "3) Call update_jobs_list(jobs) exactly once with that 5-item list, wait for confirmation.\n"
+#     "4) Do NOT print the JSON in chat.\n"
+#     "5) Only after that, reply with: Found 5 jobs.\n"
+#     "6) Then Call finalize().\n"
+#     "Rules: Never output JSON or tool results in chat. If you cannot find 5, still call update_jobs_list with as many as found.\n"
+# )
 
 
 # MAIN_SYSTEM_PROMPT = (
@@ -95,6 +112,10 @@ JOB_SEARCH_PROMPT = (
     ' {"company":"...","title":"...","location":"...","link":"https://...","Good Match":"one sentence"},'
     ' {"company":"...","title":"...","location":"...","link":"https://...","Good Match":"one sentence"}]'
     "\n</JOBS>"
+    "You must:"
+    "- Use internet_search to find relevant jobs."
+    "- Do NOT output job listings, JSON, or URLs in messages."
+    "- Return everything ONLY by calling the parent tool `update_jobs_list` with a JSON string."
 )
 
 
