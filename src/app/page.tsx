@@ -1,79 +1,54 @@
 "use client";
 
-import { useCoAgent } from "@copilotkit/react-core";
-import { CopilotChat } from "@copilotkit/react-ui";
-
-interface AgentState {
-  plan?: string;
-  post?: string;
-  step?: string;
-}
+import { ChatPanel } from "@/components/ChatPanel";
+import { LivePreviewPanel } from "@/components/LivePreviewPanel";
 
 export default function Page() {
-  const { state } = useCoAgent<AgentState>({
-    name: "post_generator",
-    initialState: { plan: "", post: "", step: "idle" },
-  });
-
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-2">Post Generator</h1>
-          <p className="text-slate-300 text-lg mb-8">
-            Powered by Deep Agents + CopilotKit
-          </p>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Chat */}
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow-xl overflow-hidden h-[600px]">
-                <CopilotChat
-                  labels={{
-                    title: "Post Generator",
-                    initial:
-                      'Tell me a topic for a blog post (e.g., "Write a blog post about Deep Agents with CopilotKit")',
-                  }}
-                />
-              </div>
+    <main className="min-h-screen flex flex-col bg-linear-to-b from-slate-50 via-white to-slate-50">
+      <header className="border-b border-slate-200/80 bg-white/70 backdrop-blur supports-backdrop-filter:bg-white/60">
+        <div className="mx-auto max-w-7xl px-4 py-4 md:px-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">
+                Job Application Assistant
+              </h1>
+              <p className="mt-1 text-sm md:text-base text-slate-600">
+                Find jobs and generate personalized cover letters with AI.
+              </p>
             </div>
 
-            {/* Live Post Preview */}
-            <div className="lg:col-span-1">
-              <div className="bg-slate-800 border border-slate-700 rounded-lg p-6 h-[600px] overflow-y-auto">
-                <h3 className="text-lg font-semibold text-white mb-4">
-                  Live Preview
-                </h3>
-                {state?.step && (
-                  <div className="mb-4 text-sm text-cyan-300">
-                    Status: <span className="font-mono">{state.step}</span>
-                  </div>
-                )}
-                {state?.plan && (
-                  <div className="text-slate-300 mb-4">
-                    <h4 className="font-semibold text-white mb-2">Plan</h4>
-                    <pre className="text-xs whitespace-pre-wrap font-mono bg-slate-900 p-3 rounded border border-slate-700">
-                      {state.plan}
-                    </pre>
-                  </div>
-                )}
-                {state?.post ? (
-                  <div className="text-slate-300 space-y-2">
-                    <h4 className="font-semibold text-white mb-2">Post</h4>
-                    <pre className="text-xs whitespace-pre-wrap font-mono bg-slate-900 p-3 rounded border border-slate-700">
-                      {state.post}
-                    </pre>
-                  </div>
-                ) : (
-                  <p className="text-slate-400 italic">
-                    Post content will appear here as the agent generates it...
-                  </p>
-                )}
-              </div>
+            <div className="hidden md:flex items-center gap-2">
+              <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
+                CopilotKit
+              </span>
+              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
+                Live
+              </span>
             </div>
           </div>
         </div>
+      </header>
+
+      <div className="mx-auto w-full max-w-7xl flex-1 min-h-0 px-4 py-4 md:px-6 md:py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0">
+          <section className="lg:col-span-2 min-h-0">
+            <ChatPanel />
+          </section>
+
+          <aside className="lg:col-span-1 min-h-0">
+            <div className="lg:sticky lg:top-6">
+              <LivePreviewPanel />
+            </div>
+          </aside>
+        </div>
       </div>
-    </div>
+
+      <footer className="border-t border-slate-200/80 bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-3 md:px-6 text-xs text-slate-500">
+          Tip: keep the preview open—tool calls + jobs will update as you chat.
+        </div>
+      </footer>
+    </main>
   );
 }
