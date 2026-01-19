@@ -1,17 +1,17 @@
-import { NextRequest } from "next/server";
 import {
   CopilotRuntime,
   ExperimentalEmptyAdapter,
   copilotRuntimeNextJSAppRouterEndpoint,
 } from "@copilotkit/runtime";
-import { HttpAgent } from "@ag-ui/client";
+import { LangGraphHttpAgent } from "@copilotkit/runtime/langgraph";
+import { NextRequest } from "next/server";
 
 const serviceAdapter = new ExperimentalEmptyAdapter();
 
 const runtime = new CopilotRuntime({
   agents: {
-    post_generator: new HttpAgent({
-      url: process.env.AGENT_URL || "http://localhost:8000/copilotkit/",
+    job_application_assistant: new LangGraphHttpAgent({
+      url: process.env.LANGGRAPH_DEPLOYMENT_URL || "http://localhost:8123",
     }),
   },
 });
