@@ -167,16 +167,6 @@ export function ChatPanel() {
                 </div>
               </div>
             )}
-            {/* {resumeUploaded && (
-              <a
-                className="text-sm text-blue-700 hover:underline"
-                href="/api/cover-letters/download"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Download cover_letters.md
-              </a>
-            )} */}
           </div>
         </div>
       </div>

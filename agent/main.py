@@ -11,19 +11,18 @@ load_dotenv()
 
 app = FastAPI(
     title="Job Application Assistant",
-    description="Find jobs and generate personalized cover letters",
+    description="Find personalized job openings based on skills and preferences",
     version="1.0.0",
 )
 
 try:
-    # agent_graph = build_agent().with_config({"recursion_limit": 200})
     agent_graph = build_agent()
     print(agent_graph)
     add_langgraph_fastapi_endpoint(
         app=app,
         agent=LangGraphAGUIAgent(
             name="job_application_assistant",
-            description="Job finder and cover letter generator",
+            description="Job finder",
             graph=agent_graph,
         ),
         path="/",

@@ -28,79 +28,6 @@ Steps:
 If you cannot find 5, still call update_jobs_list(jobs_json) with as many as found.
 """
 
-# MAIN_SYSTEM_PROMPT = (
-#     "You must do these steps in order:\n"
-#     "1) Call internet_search(query) to get results.\n"
-#     "2) Convert results into EXACTLY 5 job objects with keys: company, title, location, url, Good Match.\n"
-#     "3) Call update_jobs_list(jobs) exactly once with that 5-item list, wait for confirmation.\n"
-#     "4) Do NOT print the JSON in chat.\n"
-#     "5) Only after that, reply with: Found 5 jobs.\n"
-#     "6) Then Call finalize().\n"
-#     "Rules: Never output JSON or tool results in chat. If you cannot find 5, still call update_jobs_list with as many as found.\n"
-# )
-
-
-# MAIN_SYSTEM_PROMPT = (
-#     "You are a job search assistant.\n"
-#     "Use internet_search to find exactly 5 CURRENT job postings.\n"
-#     "Then call update_jobs_list(jobs) with a list of exactly 5 objects.\n"
-#     "Each object must have: company, title, location, link, Good Match.\n"
-#     "Do NOT print the JSON in chat.\n"
-#     "After calling update_jobs_list, reply with ONE short sentence like: 'Found 5 jobs.'\n"
-#     "Finally call finalize()."
-# )
-
-# MAIN_SYSTEM_PROMPT = (
-#     "You are a job search assistant.\n"
-#     "Use internet_search to find exactly 5 CURRENT job postings.\n\n"
-#     "Return your FINAL assistant message as ONLY this format (no extra text):\n"
-#     "<JOBS>\n"
-#     "[\n"
-#     '  {"company":"...","title":"...","location":"...","link":"https://...","Good Match":"..."},\n'
-#     '  {"company":"...","title":"...","location":"...","link":"https://...","Good Match":"..."},\n'
-#     '  {"company":"...","title":"...","location":"...","link":"https://...","Good Match":"..."},\n'
-#     '  {"company":"...","title":"...","location":"...","link":"https://...","Good Match":"..."},\n'
-#     '  {"company":"...","title":"...","location":"...","link":"https://...","Good Match":"..."}\n'
-#     "]\n"
-#     "</JOBS>\n\n"
-#     "Rules:\n"
-#     "- Do NOT wrap in markdown fences.\n"
-#     "- Do NOT escape quotes.\n"
-#     "- Output exactly one <JOBS> block.\n"
-#     "- Do not invent jobs.\n"
-# )
-
-
-# MAIN_SYSTEM_PROMPT = (
-#     "You are a job application assistant. Do two things:\n"
-#     "1) Use the internet_search tool to find exactly 5 CURRENT job postings "
-#     "(matching the user's target title, locations, and skills). "
-#     "Return them ONLY as JSON in this exact wrapper:\n"
-#     "<JOBS>\n"
-#     '[{"company":"...","title":"...","location":"...",'
-#     '"link":"https://...","Good Match":"one sentence"}, ... five total]\n'
-#     "</JOBS>\n"
-#     "Rules: The list must be valid JSON (no comments), real links to the job page "
-#     "or application page, no duplicates.\n"
-#     "Prefer reputable sources (company career pages, Lever, Greenhouse, Ashby, Workday, LinkedIn job detail pages).\n"
-#     "2) For each job, write a concise cover letter (≤150 words) with a subject line, "
-#     "appended to cover_letters.md under a heading per job using the write_file tool.\n"
-#     "Do not invent jobs.\n"
-#     "Output in this format:\n\n"
-#     "[Job Title] at [Company] in [Location]\n"
-#     "Subject Line: [subject]\n"
-#     "[body text, max 150 words, no markdown]\n\n"
-#     "---\n\n"
-#     "[Next job...]\n\n"
-#     "Rules:\n"
-#     "- Do NOT use markdown or special formatting\n"
-#     "- Do NOT mention 'Dear Hiring Manager' if you don't have a contact name\n"
-#     "- Tailor each letter to the specific job\n"
-#     "- Keep it professional and genuine\n"
-#     "- Do NOT output <JOBS> block again after cover letters\n"
-#     " - After processing all jobs and letters, ALWAYS call finalize() to end"
-#     "- Do NOT call tools after finalize()"
-# )
 
 JOB_SEARCH_PROMPT = (
     "Search and select 5 real postings that match the user's title, locations, and skills. "
@@ -116,17 +43,6 @@ JOB_SEARCH_PROMPT = (
     "- Use internet_search to find relevant jobs."
     "- Do NOT output job listings, JSON, or URLs in messages."
     "- Return everything ONLY by calling the parent tool `update_jobs_list` with a JSON string."
-)
-
-
-COVER_LETTER_PROMPT = (
-    "You are a cover letter specialist.\n"
-    "The main agent has already selected 5 jobs and stored them in the conversation.\n"
-    "For EACH job, write:\n"
-    "- A subject line\n"
-    "- A concise cover letter (≤200 words) that ties the user's skills/resume to the role\n"
-    "Append all output to cover_letters.md using the write_file tool, under a heading per job.\n"
-    "Keep writing tight and specific."
 )
 
 
@@ -179,12 +95,6 @@ def update_jobs_list(jobs_json: str) -> Dict[str, Any]:
     jobs = json.loads(jobs_json)
     print(f"[TOOL] update_jobs_list: {len(jobs)} jobs")
     return {"jobs_list": jobs}
-
-
-# def append_cover_letter(title: str, letter: str) -> Dict[str, str]:
-#     """Append cover letter to UI"""
-#     print(f"[TOOL] append_cover_letter: {title}")
-#     return {"cover_letter_title": title, "cover_letter_append": letter}
 
 
 @tool
@@ -264,7 +174,6 @@ def build_agent():
         internet_search,
         update_jobs_list,
         finalize,
-        # append_cover_letter,
     ]
 
     subagents = [
@@ -273,11 +182,6 @@ def build_agent():
             "description": "Finds relevant jobs and outputs <JOBS> JSON.",
             "system_prompt": JOB_SEARCH_PROMPT,
             "tools": [internet_search],
-        },
-        {
-            "name": "cover-letter-writer-agent",
-            "description": "Writes cover letters into cover_letters.md.",
-            "system_prompt": COVER_LETTER_PROMPT,
         },
     ]
 
