@@ -117,7 +117,6 @@ BAD_URL_SUBSTRINGS = [
     "linkedin.com/jobs/search",
     "linkedin.com/jobs/",
     "builtin.com/jobs",
-    "indeed.com",
     "naukri.com",
     "glassdoor.",
     "/jobs/search",
@@ -131,7 +130,7 @@ def _is_bad(url: str) -> bool:
 
 
 @tool
-def internet_search(query: str, max_results: int = 5) -> List[Dict[str, Any]]:
+def internet_search(query: str, max_results: int = 10) -> List[Dict[str, Any]]:
     """
     Search for jobs using Tavily API. Always returns up to 5 results.
     """
