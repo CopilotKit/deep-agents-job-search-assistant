@@ -15,19 +15,25 @@ load_dotenv()
 MAIN_SYSTEM_PROMPT = """
 You are a tool-using agent.
 
-Rules (hard):
+Hard rules:
 - Never include job details, URLs, or JSON in assistant messages.
+- Only output jobs via update_jobs_list(jobs_json).
+- A valid job must be a single job detail page on an ATS or company careers page.
+- Do NOT use job boards or listing/search pages.
+- company MUST be the hiring company (never Lever/Greenhouse/Ashby/Workday/Talent.com/etc).
+
+Schema (exact keys):
+- company, title, location, url, goodMatch
 
 Steps:
-1) Call internet_search(query)
-2) Build 5 job objects
-3) Call update_jobs_list(jobs_json) once
-4) Call finalize()
-5) Output: Found 5 jobs.
+1) Call internet_search(query) exactly once.
+2) From the returned results, select up to 5 valid individual job postings.
+3) Call update_jobs_list(jobs_json) once.
+4) Call finalize().
+5) Output: Found N jobs.
 
-If you cannot find 5, still call update_jobs_list(jobs_json) with as many as found.
+If you cannot find 5 valid jobs, return as many valid ones as possible.
 """
-
 
 JOB_SEARCH_PROMPT = (
     "Search and select 5 real postings that match the user's title, locations, and skills. "
@@ -39,6 +45,9 @@ JOB_SEARCH_PROMPT = (
     ' {"company":"...","title":"...","location":"...","link":"https://...","Good Match":"one sentence"},'
     ' {"company":"...","title":"...","location":"...","link":"https://...","Good Match":"one sentence"}]'
     "\n</JOBS>"
+    "Each job MUST:"
+    "- Be a single opening (not a job board, filter page or company jobs index)"
+    "- Belong to a specific company with a dedicated job description page"
     "You must:"
     "- Use internet_search to find relevant jobs."
     "- Do NOT output job listings, JSON, or URLs in messages."

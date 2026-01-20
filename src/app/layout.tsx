@@ -5,8 +5,8 @@ import "./globals.css";
 import "@copilotkit/react-ui/styles.css";
 
 export const metadata: Metadata = {
-  title: "Post Generator | Deep Agents with CopilotKit",
-  description: "Demo showing how to integrate CopilotKit with Deep Agents",
+  title: "Job Finder | Deep Agents with CopilotKit",
+  description: "A job search assistant powered by Deep Agents and CopilotKit",
 };
 
 export default function RootLayout({

@@ -14,7 +14,7 @@ export default function Page() {
                 Job Application Assistant
               </h1>
               <p className="mt-1 text-sm md:text-base text-slate-600">
-                Find jobs and generate personalized cover letters with AI.
+              Find personalized job openings based on skills and preferences
               </p>
             </div>
 
@@ -46,7 +46,7 @@ export default function Page() {
 
       <footer className="border-t border-slate-200/80 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-3 md:px-6 text-xs text-slate-500">
-          Tip: keep the preview open—tool calls + jobs will update as you chat.
+          Tip: keep the preview open: tool calls + jobs will update as you chat.
         </div>
       </footer>
     </main>

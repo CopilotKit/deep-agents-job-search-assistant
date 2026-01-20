@@ -5,5 +5,5 @@ export type JobPosting = {
   title: string;
   location: string;
   url: string;
-  goodMatch?: string;
+  goodMatch?: boolean;
 };

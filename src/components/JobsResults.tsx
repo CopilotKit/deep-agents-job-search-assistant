@@ -4,7 +4,7 @@ import { JobPosting } from "@/lib/types";
 
 export function JobsResults({ jobs }: { jobs: JobPosting[] }) {
   if (!jobs.length) return null;
-
+  
   return (
     <div className="mt-4 bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
       <div className="px-4 py-3 border-b border-slate-200">
@@ -33,7 +33,7 @@ export function JobsResults({ jobs }: { jobs: JobPosting[] }) {
                     Open
                   </a>
                 </td>
-                <td className="px-4 py-2">{j.goodMatch || "Yes"}</td>
+                <td className="px-4 py-2">{j.goodMatch === true ? "Yes" : "No"}</td>
               </tr>
             ))}
           </tbody>
